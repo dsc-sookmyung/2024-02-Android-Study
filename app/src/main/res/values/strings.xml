@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">GDG-Android</string>
+
+    <!-- 메인 페이지 -->
+    <string name="header_main_description">소프트웨어학부, 2학년</string>
+    <string name="header_main_name">이가을</string>
+    <string name="header_main_hobbies">나의 취미</string>
+    <string name="img_main_description">Profile Image</string>
+    <string name="img_main_url"><![CDATA[https://avatars.githubusercontent.com/u/91470334?s=400&u=4a743fda141cf8a074022b515b0ce3286e6c8560&v=4]]></string>
 </resources>
