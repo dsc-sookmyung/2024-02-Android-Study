@@ -1,11 +1,6 @@
 # 2024-02-Android-Study
 [24-25 GDG on Campus Sookmyung 5기] 1분기 스터디(Android)를 위한 저장소
 
----
-
-## 1주차 과제
-Kotlin 문법 알아보기 [📖](https://fluttering-rose-d9f.notion.site/9959c57115414767b615fc7196c9eaf7?pvs=4)
-
 > 스터디 기간 : 2024-09-25 ~</br>
 ## 🤖 Android Study Members 🤖
  |<img src="https://avatars.githubusercontent.com/u/91470334?s=400&u=4a743fda141cf8a074022b515b0ce3286e6c8560&v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/177762020?v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/166610834?v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/140608054?v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/152948170?v=4" width="250" />|
