@@ -7,4 +7,15 @@
     <string name="header_main_hobbies">나의 취미</string>
     <string name="img_main_description">Profile Image</string>
     <string name="img_main_url"><![CDATA[https://avatars.githubusercontent.com/u/91470334?s=400&u=4a743fda141cf8a074022b515b0ce3286e6c8560&v=4]]></string>
+
+    <!-- 로그인 페이지 -->
+    <string name="tv_login_title">안녕하세요, 여러분</string>
+    <string name="tv_login_department">학부</string>
+    <string name="tv_login_department_placeholder">학부를 입력해주세요</string>
+    <string name="tv_login_name">이름</string>
+    <string name="tv_login_name_placeholder">이름을 입력해주세요</string>
+    <string name="toast_login_success">로그인에 성공했습니다</string>
+    <string name="toast_login_failure">학부와 이름을 입력해주세요</string>
+    <string name="btn_login_text">로그인</string>
+
 </resources>
