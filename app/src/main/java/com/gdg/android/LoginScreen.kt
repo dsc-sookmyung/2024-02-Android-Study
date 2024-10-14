@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.gdg.android.ui.theme.GDGAndroidTheme
 
 @Composable
 fun LoginScreen(
@@ -132,7 +133,7 @@ fun LoginScreen(
 @Preview
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(
-        navController = rememberNavController()
-    )
+    GDGAndroidTheme {
+        LoginScreen(navController = rememberNavController())
+    }
 }
