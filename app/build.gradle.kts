@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.utils.IMPLEMENTATION
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -69,6 +67,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation ("androidx.navigation:navigation-compose:2.7.1")
-
 }
