@@ -3,6 +3,9 @@ package com.gdg.android
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -17,6 +20,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -34,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.gdg.android.ui.theme.GDGAndroidTheme
@@ -45,6 +59,67 @@ class MainActivity : ComponentActivity() {
         setContent {
             MainScreen()
         }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "로그인",
+                fontSize = 24.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            //학부 입력
+            TextField(
+                value = department.value,
+                onValueChange = { department.value = it },
+                placeholder = {
+                    Text(text = "학부를 입력해주세요", fontSize = 14.sp, color = Color.Gray)
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
+            TextField(
+                value = name.value,
+                onValueChange = { name.value = it },
+                placeholder = {
+                    Text(text = "이름을 입력해주세요", fontSize = 14.sp, color = Color.Gray)
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+
+            )
+
+            Button(
+                onClick = { onLoginClick() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "로그인")
+            }
+        }
+
     }
 }
 
