@@ -1,4 +1,4 @@
-package com.gdg.android
+package com.gdg.android.presentation.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.gdg.android.presentation.login.LoginScreen
+import com.gdg.android.presentation.user.UserScreen
 import com.gdg.android.ui.theme.GDGAndroidTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,6 +27,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("main") {
                         MainScreen(navController)
+                    }
+                    composable("user") {
+                        UserScreen(navController)
                     }
                 }
             }

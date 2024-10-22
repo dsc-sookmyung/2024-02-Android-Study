@@ -1,4 +1,4 @@
-package com.gdg.android
+package com.gdg.android.presentation.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.gdg.android.R
 import com.gdg.android.ui.theme.GDGAndroidTheme
 
 @Composable
@@ -64,6 +67,18 @@ fun MainScreen(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
+            Button(
+                modifier = Modifier.padding(bottom = 24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray
+                ),
+                onClick = { navController.navigate("user") }
+            ) {
+                Text(
+                    text = "유저 목록",
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
         Text(
             modifier = Modifier.padding(bottom = 15.dp),

@@ -1,4 +1,4 @@
-package com.gdg.android
+package com.gdg.android.presentation.login
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.gdg.android.R
 import com.gdg.android.ui.theme.GDGAndroidTheme
 
 @Composable
