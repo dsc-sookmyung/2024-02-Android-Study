@@ -60,8 +60,12 @@ class MainActivity : ComponentActivity() {
                     GreetingScreen(
                         name = "백서연",
                         depart = "소프트웨어융합전공",
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
+                        navController = navController
                     )
+                }
+                composable("user"){
+                    UserScreen(navController)
                 }
             }
         }
@@ -69,7 +73,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GreetingScreen(name: String, depart: String, modifier: Modifier = Modifier) {
+fun GreetingScreen(
+    name: String,
+    depart: String,
+    modifier: Modifier = Modifier,
+    navController: NavController
+) {
     val subjects = listOf("네트워크보안", "컴퓨터특강", "데이터마이닝및분석", "파이썬데이터분석", "경영정보시스템")
 
     Column(
@@ -97,6 +106,10 @@ fun GreetingScreen(name: String, depart: String, modifier: Modifier = Modifier) 
             modifier = modifier.padding(top = 10.dp),
             color = Color.Gray,
         )
+
+        Button(onClick = {
+            navController.navigate("user")
+        }) { Text("유저 목록") }
 
         Text(
             text = stringResource(R.string._24_2),
@@ -186,11 +199,7 @@ fun GreetingPreview() {
                 .background(Color.White)
                 .padding(top = 30.dp)
         ) {
-            GreetingScreen(
-                name = "백서연",
-                depart = "소프트웨어융합전공",
-                modifier = Modifier.padding(16.dp)
-            )
+
 
 
         }
