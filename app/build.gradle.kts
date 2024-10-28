@@ -1,7 +1,14 @@
+import shadow.bundletool.com.android.tools.r8.internal.id
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
 }
+
+val properties =
+    Properties().apply { load(project.rootProject.file("local.properties").inputStream()) }
 
 android {
     namespace = "com.gdg.android"
@@ -18,7 +25,11 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "BASE_URL", properties["base.url"].toString())
     }
+
+
 
     buildTypes {
         release {
@@ -38,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -59,6 +71,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui.test.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,4 +81,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.navigation:navigation-compose:2.7.1")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.5.1")
+    implementation ("androidx.compose.ui:ui:1.5.1")
+    implementation ("androidx.compose.foundation:foundation:1.5.1")
+    implementation ("androidx.compose.material3:material3:1.1.1")
+    // Retrofit2
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor")
 }
