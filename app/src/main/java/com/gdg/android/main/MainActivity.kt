@@ -1,4 +1,4 @@
-package com.gdg.android
+package com.gdg.android.main
 
 import android.os.Bundle
 import android.widget.Toast
@@ -46,6 +46,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.gdg.android.user.UserScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -60,7 +61,10 @@ class MainActivity : ComponentActivity() {
                     LoginScreen(navController)
                 }
                 composable("main") {
-                    MainScreen()
+                    MainScreen(navController)
+                }
+                composable("users") {
+                    UserScreen(navController)
                 }
             }
         }
@@ -148,7 +152,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavController) {
     val hobbies = listOf(
         "독서", "영화 감상", "음악 감상", "산책", "뜨개질", "기타 연주"
     )
@@ -164,7 +168,13 @@ fun MainScreen() {
             status = "숙명여자대학교 인공지능공학부 23학번입니다."
         )
 
+        Button(onClick = { navController.navigate("users") }) {
+            Text("유저 목록")
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
+
+
 
         Text(
             text = "취미",
@@ -199,9 +209,9 @@ fun ProfileHeader(imageUrl: String, name: String, status: String) {
             model = imageUrl,
             contentDescription = "Profile Image",
             modifier = Modifier
+                .padding(8.dp)
                 .clip(CircleShape)
-                .size(130.dp)
-                .padding(8.dp),
+                .size(130.dp),
             contentScale = ContentScale.Crop
         )
 
@@ -224,5 +234,5 @@ fun ProfileHeader(imageUrl: String, name: String, status: String) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMainScreen() {
-    MainScreen()
+    MainScreen(navController = rememberNavController())
 }
