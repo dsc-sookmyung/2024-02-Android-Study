@@ -1,5 +1,6 @@
 package com.gdg.android
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -28,19 +29,59 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.lifecycleScope
 import com.gdg.android.R
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auto_login")
 class MainActivity : ComponentActivity() {
+    private val AUTO_LOGIN_KEY = booleanPreferencesKey("auto_login")
+    //자동 로그인 상태 저장 함수
+    suspend fun saveAutoLoginState(context: Context, isLoggedIn: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[AUTO_LOGIN_KEY] = isLoggedIn
+        }
+    }
+    // 자동 로그인 상태 불러오기 함수
+    fun getAutoLoginState(context: Context): Flow<Boolean> {
+        return context.dataStore.data
+            .map { preferences ->
+                preferences[AUTO_LOGIN_KEY] ?: false // 기본값은 false
+            }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "login") {
-                composable("login") { LoginScreen(navController) }
-                composable("main") { MainScreen(navController) }
-                composable("user") { UserScreen(navController) }
+        // 로그인 상태를 확인하여 네비게이션 결정
+        lifecycleScope.launch {
+            val isLoggedIn = getAutoLoginState(applicationContext).first() // 자동 로그인 상태 확인
+            setContent {
+                val navController = rememberNavController()
+                GDGAndroidTheme {
+                    NavHost(
+                        navController = navController,
+                        startDestination = if (isLoggedIn) "main" else "login" // 자동 로그인 여부에 따라 시작 화면 설정
+                    ) {
+                        composable("login") {
+                            LoginScreen(navController)
+                        }
+                        composable("main") {
+                            MainScreen(navController)
+                        }
+                        composable("user") {
+                            UserScreen(navController)
+                        }
+                        composable("userCreate") { UserCreateScreen(navController) }
+                    }
+                }
             }
         }
     }
@@ -108,11 +149,21 @@ fun LoginScreen(navController: androidx.navigation.NavHostController) {
                 onClick = {
                     if (department.isNotEmpty() && name.isNotEmpty()) {
                         Toast.makeText(context, "로그인에 성공했습니다", Toast.LENGTH_SHORT).show()
-                        navController.navigate("main")
+
+                        // 자동 로그인 상태 저장 로직 추가
+                        (context as? MainActivity)?.lifecycleScope?.launch {
+                            (context as? MainActivity)?.saveAutoLoginState(context, true)
+                        }
+
+                        // 메인 화면으로 이동 후, 시작 화면까지 popUp
+                        navController.navigate("main") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        }
                     } else {
                         Toast.makeText(context, "학부와 이름을 모두 입력해주세요", Toast.LENGTH_SHORT).show()
                     }
-                }, colors = ButtonDefaults.buttonColors(
+                },
+                colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                     contentColor = Color.White
                 ),
@@ -123,6 +174,7 @@ fun LoginScreen(navController: androidx.navigation.NavHostController) {
             ) {
                 Text(text = "로그인", fontWeight = FontWeight.Bold)
             }
+
         }
     }
 }
@@ -130,6 +182,7 @@ fun LoginScreen(navController: androidx.navigation.NavHostController) {
 
 @Composable
 fun Greeting(name: String, major: String, myFavorites: String, modifier: Modifier = Modifier, navController: androidx.navigation.NavController) {
+    val context = LocalContext.current
     val favorites = listOf(
         "야구 직관⚾️", "빵집 다니기🥐", "노래 듣기🎧", "여행 다니기✈️",
         "친구 만나기👭", "독립 서점 찾기📚", "필름 카메라로 사진 찍기📷", "영화 보기🍿"
@@ -161,22 +214,48 @@ fun Greeting(name: String, major: String, myFavorites: String, modifier: Modifie
                 .padding(top = 10.dp),
             fontSize = 24.sp
         )
-
-        Button(
-            onClick = { navController.navigate("user") }, // UserScreen으로 이동
+        Row(
             modifier = Modifier
                 .padding(top = 10.dp)
-                .fillMaxWidth(0.3f),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White
-            ),
-            shape = RectangleShape
-
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally) // 버튼 간의 공간을 균등하게 배치
         ) {
-            Text(text = "유저 목록")
-        }
+            Button(
+                onClick = { navController.navigate("user") }, // UserScreen으로 이동
+                modifier = Modifier
+                    .wrapContentWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                shape = RectangleShape
 
+            ) {
+                Text(text = "유저 목록")
+            }
+
+            Button(
+                modifier = Modifier.wrapContentWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                shape = RectangleShape,
+                onClick = {
+                    (context as? MainActivity)?.lifecycleScope?.launch {
+                        (context as? MainActivity)?.saveAutoLoginState(context, false)
+                    }
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    }
+                }
+            ) {
+                Text(
+                    text = "로그아웃"
+                )
+            }
+        }
+    }
         Text(
             text = myFavorites,
             modifier = modifier
@@ -202,7 +281,7 @@ fun Greeting(name: String, major: String, myFavorites: String, modifier: Modifie
             }
         }
     }
-}
+
 
 @Composable
 fun MainScreen(navController: androidx.navigation.NavController) {
