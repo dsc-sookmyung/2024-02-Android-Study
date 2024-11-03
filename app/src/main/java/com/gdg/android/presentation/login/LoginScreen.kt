@@ -27,10 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.gdg.android.R
+import com.gdg.android.presentation.main.MainActivity
 import com.gdg.android.ui.theme.GDGAndroidTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -109,11 +112,16 @@ fun LoginScreen(
             contentPadding = PaddingValues(vertical = 12.dp),
             onClick = {
                 if (department.isNotBlank() && name.isNotBlank()) {
+                    (context as? MainActivity)?.lifecycleScope?.launch {
+                        (context as? MainActivity)?.saveAutoLoginState(context, true)
+                    }
+                    navController.navigate("main") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    }
                     Toast.makeText(
                         context,
                         context.getString(R.string.toast_login_success), Toast.LENGTH_SHORT
                     ).show()
-                    navController.navigate("main")
                 } else {
                     Toast.makeText(
                         context,

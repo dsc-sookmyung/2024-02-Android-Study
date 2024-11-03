@@ -2,10 +2,13 @@ package com.gdg.android.presentation.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -18,17 +21,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.gdg.android.R
 import com.gdg.android.ui.theme.GDGAndroidTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -36,6 +42,7 @@ fun MainScreen(
 ) {
     val hobbies =
         listOf("독서", "영화 감상", "음악 감상", "요리", "운동", "코딩", "게임 하기", "여행", "친구들과 수다 떨기", "쇼핑")
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -67,17 +74,39 @@ fun MainScreen(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
-            Button(
-                modifier = Modifier.padding(bottom = 24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray
-                ),
-                onClick = { navController.navigate("user") }
-            ) {
-                Text(
-                    text = "유저 목록",
-                    fontWeight = FontWeight.Bold
-                )
+            Row {
+                Button(
+                    modifier = Modifier.padding(bottom = 24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Gray
+                    ),
+                    onClick = { navController.navigate("user") }
+                ) {
+                    Text(
+                        text = "유저 목록",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.width(7.dp))
+                Button(
+                    modifier = Modifier.padding(bottom = 24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF3A61B6),
+                    ),
+                    onClick = {
+                        (context as? MainActivity)?.lifecycleScope?.launch {
+                            (context as? MainActivity)?.saveAutoLoginState(context, false)
+                        }
+                        navController.navigate("login") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "로그아웃",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
         Text(
