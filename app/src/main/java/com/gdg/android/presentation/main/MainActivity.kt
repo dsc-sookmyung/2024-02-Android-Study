@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gdg.android.presentation.login.LoginScreen
+import com.gdg.android.presentation.user.UserCreateScreen
 import com.gdg.android.presentation.user.UserScreen
 import com.gdg.android.ui.theme.GDGAndroidTheme
 import kotlinx.coroutines.flow.Flow
@@ -62,6 +63,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("user") {
                             UserScreen(navController)
+                        }
+                        composable("userCreate") {
+                            UserCreateScreen(navController)
                         }
                     }
                 }
