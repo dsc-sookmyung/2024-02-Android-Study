@@ -52,3 +52,6 @@
 
 # 안드로이드 1주차 스터디 (노션)
 https://scented-lizard-4b4.notion.site/1-10fdda7e3dfa809b9eebcae705b05783
+
+# 안드로이드 5주차 스터디 (노션)
+https://scented-lizard-4b4.notion.site/126dda7e3dfa80c1bf4df066be25f35d
