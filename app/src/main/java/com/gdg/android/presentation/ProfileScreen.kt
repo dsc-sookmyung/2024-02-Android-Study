@@ -14,23 +14,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 
 val hobbies = listOf(
     "🍿 혼자 영화 보기", "🛹 스케이트보드 타기", "🎨 그림 그리기", "🎮 게임하기", "📚 독서하기",
     "💥 만화 보기", "👩‍🍳 요리 하기", "🥁 드럼 연주하기", "🎧 음악 감상하기", "📺 애니 정주행하기"
 )
 
+
+
 @Composable
 fun ProfileScreen(navController: NavController, name: String = "조영서", major: String = "소프트웨어학부, 2학년") {
+
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,9 +72,15 @@ fun ProfileScreen(navController: NavController, name: String = "조영서", majo
             textAlign = TextAlign.Center
         )
 
+        // Row로 버튼을 감싸 좌우 배치
+        Row(
+            modifier = Modifier.padding(top = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp) // 버튼 간 간격 설정
+        ) {
+
         Button(
             onClick = { navController.navigate("user") }, // 유저 목록 화면으로 이동
-            modifier = Modifier.padding(top = 20.dp),
+            modifier = Modifier.padding(top = 10.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF313131),
                 contentColor = Color.White
@@ -80,6 +94,32 @@ fun ProfileScreen(navController: NavController, name: String = "조영서", majo
                 )
             )
         }
+
+        Button(
+            onClick = {
+                (context as? MainActivity)?.lifecycleScope?.launch {
+                    (context as? MainActivity)?.saveAutoLoginState(context, false)
+                }
+                navController.navigate("login") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                }
+            },
+            modifier = Modifier.padding(top = 10.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF313131),
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                text = "로그아웃",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            )
+        }
+            }
+
 
         Text(
             text = "나의 취미",

@@ -20,7 +20,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginPage(navController: NavController? = null) {
@@ -64,9 +66,16 @@ fun LoginPage(navController: NavController? = null) {
                 majorError = if (majorTextValue.value.isEmpty()) "학부를 입력해주세요." else ""
                 nameError = if (nameTextValue.value.isEmpty()) "이름을 입력해주세요." else ""
 
+                (context as? MainActivity)?.lifecycleScope?.launch {
+                    (context as? MainActivity)?.saveAutoLoginState(context, true)
+                }
+
                 if (majorTextValue.value.isNotEmpty() && nameTextValue.value.isNotEmpty()) {
                     Toast.makeText(context, "로그인에 성공했습니다", Toast.LENGTH_SHORT).show()
-                    navController?.navigate("profile")
+                    navController?.navigate("profile") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+
+                    }
                 }
             },
             modifier = Modifier
