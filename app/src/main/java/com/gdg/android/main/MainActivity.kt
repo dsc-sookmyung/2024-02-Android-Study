@@ -1,5 +1,6 @@
 package com.gdg.android.main
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,102 +50,65 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.gdg.android.user.UserScreen
 import kotlinx.coroutines.launch
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHost
+import com.gdg.android.login.LoginScreen
+import com.gdg.android.ui.theme.GDGAndroidTheme
+import com.gdg.android.user.UserCreateScreen
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auto_login")
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            val navController = rememberNavController()
-            NavHost(
-                navController, startDestination = "login") {
-                composable("login") {
-                    LoginScreen(navController)
-                }
-                composable("main") {
-                    MainScreen(navController)
-                }
-                composable("users") {
-                    UserScreen(navController)
-                }
-            }
+    private val AUTO_LOGIN_KEY = booleanPreferencesKey("auto_login")
+
+    //자동 로그인 상태 저장 함수
+    suspend fun saveAutoLoginState(context: Context, isLoggedIn: Boolean) {
+        //key에 로그인 여부 나타내는 불리언 값 datastore에 저장
+        context.dataStore.edit { preferences ->
+            preferences[AUTO_LOGIN_KEY] = isLoggedIn
         }
     }
 
-    @Composable
-    fun LoginScreen(navController: NavController) {
-        val name = remember { mutableStateOf("") }
-        val department = remember { mutableStateOf("") }
-        val context = LocalContext.current
-        val coroutineScope = rememberCoroutineScope()
-
-        fun onLoginClick() {
-            coroutineScope.launch {
-                if (name.value.isNotEmpty() && department.value.isNotEmpty()) {
-                    Toast.makeText(context, "로그인에 성공했습니다", Toast.LENGTH_SHORT).show()
-                    navController.navigate("main")
-                } else {
-                    Toast.makeText(context, "모든 항목을 입력해주세요", Toast.LENGTH_SHORT).show()
-                }
+    fun getAutoLoginState(context: Context): Flow<Boolean> {
+        return context.dataStore.data
+            .map { preferences ->
+                preferences[AUTO_LOGIN_KEY] ?: false
             }
-        }
+    }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .background(Color.White),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "로그인",
-                    fontSize = 24.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-                //학부 입력
-                TextField(
-                    value = department.value,
-                    onValueChange = { department.value = it },
-                    placeholder = {
-                        Text(text = "학부를 입력해주세요", fontSize = 14.sp, color = Color.Gray)
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                )
-
-                TextField(
-                    value = name.value,
-                    onValueChange = { name.value = it },
-                    placeholder = {
-                        Text(text = "이름을 입력해주세요", fontSize = 14.sp, color = Color.Gray)
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-
-                )
-
-                Button(
-                    onClick = { onLoginClick() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "로그인")
+        lifecycleScope.launch {
+            val isLoggedIn = getAutoLoginState(applicationContext).first()
+            setContent {
+                val navController = rememberNavController()
+                GDGAndroidTheme {
+                    NavHost(
+                        navController = navController,
+                        startDestination = if (isLoggedIn) "main" else "login"
+                    ) {
+                        composable("login") {
+                            LoginScreen(navController)
+                        }
+                        composable("main") {
+                            MainScreen(navController)
+                        }
+                        composable("users") {
+                            UserScreen(navController)
+                        }
+                        composable("userCreate") {
+                            UserCreateScreen(navController)
+                        }
+                    }
                 }
             }
         }
@@ -157,6 +122,8 @@ fun MainScreen(navController: NavController) {
         "독서", "영화 감상", "음악 감상", "산책", "뜨개질", "기타 연주"
     )
 
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -168,13 +135,26 @@ fun MainScreen(navController: NavController) {
             status = "숙명여자대학교 인공지능공학부 23학번입니다."
         )
 
-        Button(onClick = { navController.navigate("users") }) {
-            Text("유저 목록")
+        Row() {
+            Button(
+                onClick = { navController.navigate("users") }) { Text("유저 목록") }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-
+        Button(
+            onClick = {
+                (context as? MainActivity)?.lifecycleScope?.launch {
+                    (context as? MainActivity)?.saveAutoLoginState(context, false)
+                }
+                navController.navigate("login") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                }
+            }
+        ) {
+            Text(
+                text = "로그아웃",
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Text(
             text = "취미",

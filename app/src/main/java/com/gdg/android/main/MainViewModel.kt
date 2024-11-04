@@ -17,6 +17,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             runCatching { ServicePool.userService.getUsers(page = 2) }
                 .onSuccess {
+                    //ServicePool.userService.getUsers(page = 2) 객체가 responseuserdto 반환하므로 it이 dto 됨
                     _users.value = it.data
                     Log.d("MainViewModel", "getUsers: ${it.data}")
                 }
