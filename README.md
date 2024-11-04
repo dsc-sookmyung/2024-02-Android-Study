@@ -48,3 +48,5 @@
  ```
 
  </br>
+
+ 5주차 코루틴에 대한 내용정리 노션 링크: https://cosmic-smell-192.notion.site/WEEK05-Preferences-Datastore-Room-1336d62c2f5380bf993bc4ca673168cf?pvs=4
