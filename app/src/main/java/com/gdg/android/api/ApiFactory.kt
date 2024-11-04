@@ -4,11 +4,22 @@ import com.gdg.android.BuildConfig.BASE_URL
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 
 object ApiFactory {
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
+
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
+            .client(client)
             .baseUrl(BASE_URL)
             .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
             .build()
