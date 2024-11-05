@@ -48,3 +48,8 @@
  ```
 
  </br>
+
+ ## 📝 Study Note
+1주차 | https://fluttering-rose-d9f.notion.site/Jetpack-Compose-118659d6088180ab897fd0f46992aea8?pvs=4
+
+5주차 | https://fluttering-rose-d9f.notion.site/5-Preferences-Datastore-Room-135659d6088180c4a1e8d024ed5f4365?pvs=4
