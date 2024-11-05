@@ -1,5 +1,6 @@
 package com.gdg.android
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -8,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,42 +34,80 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role.Companion.Button
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.gdg.android.ui.theme.GDGAndroidTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name="auto_login")
 class MainActivity : ComponentActivity() {
+    private val AUTO_LOGIN_KEY = booleanPreferencesKey("auto_login")
+
+    suspend fun saveAutoLoginState(context: Context, isLoggedIn: Boolean){
+        context.dataStore.edit{ preferences ->
+            preferences[AUTO_LOGIN_KEY] = isLoggedIn
+        }
+    }
+
+    fun getAutoLoginState(context: Context): Flow<Boolean> {
+        return context.dataStore.data
+            .map{preferences ->
+                preferences[AUTO_LOGIN_KEY] ?: false
+            }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            val navController = rememberNavController()
 
-            NavHost(
-                navController = navController,
-                startDestination = "signIn",
-            ) {
-                composable("signIn") {
-                    SignInScreen(navController)
-                }
-                composable("greeting") {
-                    GreetingScreen(
-                        name = "백서연",
-                        depart = "소프트웨어융합전공",
-                        modifier = Modifier.padding(16.dp),
-                        navController = navController
-                    )
-                }
-                composable("user"){
-                    UserScreen(navController)
+        enableEdgeToEdge()
+
+        lifecycleScope.launch {
+            val isLoggedIn = getAutoLoginState(applicationContext).first()
+
+            setContent {
+                val navController = rememberNavController()
+
+                NavHost(
+                    navController = navController,
+                    startDestination = if (isLoggedIn) "greeting" else "signIn"
+                ) {
+                    composable("signIn") {
+                        SignInScreen(navController)
+                    }
+                    composable("greeting") {
+                        GreetingScreen(
+                            name = "백서연",
+                            depart = "소프트웨어융합전공",
+                            modifier = Modifier.padding(16.dp),
+                            navController = navController
+                        )
+                    }
+                    composable("user"){
+                        UserScreen(navController)
+                    }
+                    composable("userCreate"){
+                        UserCreateScreen(navController)
+                    }
                 }
             }
+
         }
     }
 }
@@ -80,6 +120,7 @@ fun GreetingScreen(
     navController: NavController
 ) {
     val subjects = listOf("네트워크보안", "컴퓨터특강", "데이터마이닝및분석", "파이썬데이터분석", "경영정보시스템")
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -107,9 +148,25 @@ fun GreetingScreen(
             color = Color.Gray,
         )
 
-        Button(onClick = {
-            navController.navigate("user")
-        }) { Text("유저 목록") }
+        Row(){
+            Button(onClick = {
+                navController.navigate("user")
+            }) { Text("유저 목록") }
+
+            Button(onClick ={
+                (context as? MainActivity)?.lifecycleScope?.launch {
+                    (context as? MainActivity)?.saveAutoLoginState(context,false)
+                }
+                navController.navigate("signIn"){
+                    popUpTo(navController.graph.startDestinationId){
+                        inclusive=true
+                    }
+                }
+            }){
+                Text("로그아웃", fontWeight = FontWeight.Bold)
+            }
+        }
+
 
         Text(
             text = stringResource(R.string._24_2),
@@ -178,11 +235,17 @@ fun SignInScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(80.dp))
 
         Button(onClick = {
-            if (name.isNotEmpty() and department.isNotEmpty()) {
+            if (name.isNotEmpty() && department.isNotEmpty()) {
+                (context as? MainActivity)?.lifecycleScope?.launch {
+                    (context as? MainActivity)?.saveAutoLoginState(context, true)
+                }
                 Toast.makeText(context, "로그인에 성공했습니다", Toast.LENGTH_SHORT).show()
-                navController.navigate("greeting")
+                navController.navigate("greeting") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                }
             }
         }) { Text("로그인") }
+
 
     }
 

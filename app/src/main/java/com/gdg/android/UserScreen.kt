@@ -1,6 +1,7 @@
 package com.gdg.android
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,29 +13,42 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @Composable
@@ -42,16 +56,42 @@ fun UserScreen(navController: NavController) {
     val mainViewModel: MainViewModel = viewModel()
     val users by mainViewModel.users.observeAsState(emptyList())
 
+    val context = LocalContext.current
+    val roomDB = UserDatabase.getDatabase(context)
+    val coroutineScope = rememberCoroutineScope()
+    val userList = remember { mutableStateListOf<UserEntity>() }
+
     LaunchedEffect(Unit) {
-        mainViewModel.getUsers()
+        coroutineScope.launch {
+            val users = withContext(Dispatchers.IO) {
+                roomDB.userDao().selectAll()
+            }
+            mainViewModel.getUsers()
+            userList.clear()
+            userList.addAll(users)
+        }
+
     }
 
-    MyScreen(navController = navController, users = users)
+
+    // userList, roomDB, coroutineScope 전달
+    MyScreen(
+        navController = navController,
+        users = users,
+        userList = userList,
+        roomDB = roomDB
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyScreen(navController: NavController, users: List<User>) {
+fun MyScreen(
+    navController: NavController,
+    users: List<User>,
+    userList: MutableList<UserEntity>,
+    roomDB: UserDatabase
+) {
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             SmallTopAppBar(
@@ -70,6 +110,20 @@ fun MyScreen(navController: NavController, users: List<User>) {
                     )
                 }
             )
+        },
+        floatingActionButton = {
+            SmallFloatingActionButton(
+                shape = CircleShape,
+                containerColor = Color.Gray,
+                contentColor = Color.White,
+                onClick = { navController.navigate("userCreate") } // 유저 등록 화면으로 이동
+            ) {
+                Icon(
+                    modifier = Modifier.padding(15.dp),
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = null
+                )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -79,8 +133,30 @@ fun MyScreen(navController: NavController, users: List<User>) {
                 .padding(innerPadding)
         ) {
             LazyColumn {
-                items(users) { user ->
+                items(users){ user ->
                     UserItem(user)
+                }
+
+                item{
+                    Text(
+                        text = "직접 추가한 유저 목록",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(20.dp)
+                    )
+                }
+
+                itemsIndexed(userList) { _, user ->
+                    UserCreateItem(
+                        user = user,
+                        onDeleteClick = {
+                            coroutineScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    roomDB.userDao().delete(user) // 유저 삭제
+                                }
+                                userList.remove(user) // UI에서 유저 제거
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -118,4 +194,34 @@ fun UserItem(user: User) {
             contentScale = ContentScale.Crop
         )
     }
+}
+
+@Composable
+fun UserCreateItem(
+    user: UserEntity,
+    onDeleteClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp, horizontal = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(text = user.name, color = Color.Black)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = user.email, color = Color.Gray)
+        }
+        Icon(
+            modifier = Modifier.clickable { onDeleteClick() }, // 삭제 클릭 이벤트
+            imageVector = Icons.Filled.Delete,
+            contentDescription = null,
+        )
+    }
+    HorizontalDivider(
+        modifier = Modifier.fillMaxWidth(),
+        thickness = 1.dp,
+        color = Color.LightGray
+    )
 }
