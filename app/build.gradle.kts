@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
+    id("kotlin-kapt")
 }
 
 val properties =
@@ -86,10 +87,15 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.1")
     implementation ("androidx.compose.ui:ui:1.5.1")
-    implementation ("androidx.compose.foundation:foundation:1.5.1")
+    implementation ("androidx.compose.foundation:foundation-layout:1.5.1")
     implementation ("androidx.compose.material3:material3:1.1.1")
     // Retrofit2
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    // Room
+    implementation("androidx.room:room-runtime:2.5.0")
+    kapt("androidx.room:room-compiler:2.5.0")
+
 }

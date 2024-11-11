@@ -4,6 +4,9 @@
 #안드로이드 1주차 스터디
 https://bramble-jet-808.notion.site/2-45ffffa2889b40fa9b6b12a8fb4b497b
 
+#안드로이드 5주차 스터디
+https://bramble-jet-808.notion.site/5-1342fdd129988029a9ccf3498db8c0dd?pvs=4
+
 > 스터디 기간 : 2024-09-25 ~</br>
 ## 🤖 Android Study Members 🤖
  |<img src="https://avatars.githubusercontent.com/u/91470334?s=400&u=4a743fda141cf8a074022b515b0ce3286e6c8560&v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/177762020?v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/166610834?v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/140608054?v=4" width="250" />|<img src="https://avatars.githubusercontent.com/u/152948170?v=4" width="250" />|
