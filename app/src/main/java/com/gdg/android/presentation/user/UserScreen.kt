@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -61,16 +62,18 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserScreen(navController: NavController) {
-    val mainViewModel: MainViewModel = viewModel()
-    val users by mainViewModel.users.observeAsState(emptyList())
+fun UserScreen(
+    navController: NavController
+) {
+    val userViewModel: UserViewModel = viewModel()
+    val users by userViewModel.users.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val roomDB = UserDatabase.getDatabase(context)
     val coroutineScope = rememberCoroutineScope()
     val userList = remember { mutableStateListOf<UserEntity>() }
 
     LaunchedEffect(Unit) {
-        mainViewModel.getUsers()
+        userViewModel.getUsers()
     }
 
     // 데이터를 비동기로 불러오기

@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     navController: NavController,
+    mainViewModel: MainViewModel
 ) {
     val hobbies =
         listOf("독서", "영화 감상", "음악 감상", "요리", "운동", "코딩", "게임 하기", "여행", "친구들과 수다 떨기", "쇼핑")
@@ -94,9 +95,7 @@ fun MainScreen(
                         containerColor = Color(0xFF3A61B6),
                     ),
                     onClick = {
-                        (context as? MainActivity)?.lifecycleScope?.launch {
-                            (context as? MainActivity)?.saveAutoLoginState(context, false)
-                        }
+                        mainViewModel.saveAutoLoginState(context, false)
                         navController.navigate("login") {
                             popUpTo(navController.graph.startDestinationId) { inclusive = true }
                         }
@@ -136,6 +135,9 @@ fun MainScreen(
 @Composable
 fun MainScreenPreview() {
     GDGAndroidTheme {
-        MainScreen(navController = rememberNavController())
+        MainScreen(
+            navController = rememberNavController(),
+            mainViewModel = MainViewModel()
+        )
     }
 }

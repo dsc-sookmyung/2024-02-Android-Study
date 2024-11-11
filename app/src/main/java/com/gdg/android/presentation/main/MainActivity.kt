@@ -10,7 +10,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,31 +25,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auto_login")
 class MainActivity : ComponentActivity() {
-    private val AUTO_LOGIN_KEY = booleanPreferencesKey("auto_login")
-
-    // 자동 로그인 상태 저장 함수
-    suspend fun saveAutoLoginState(context: Context, isLoggedIn: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[AUTO_LOGIN_KEY] = isLoggedIn
-        }
-    }
-
-    // 자동 로그인 상태 불러오기 함수
-    fun getAutoLoginState(context: Context): Flow<Boolean> {
-        return context.dataStore.data
-            .map { preferences ->
-                preferences[AUTO_LOGIN_KEY] ?: false // 기본값은 false
-            }
-    }
-
+    private lateinit var mainViewModel: MainViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
         enableEdgeToEdge()
-        // 로그인 상태를 확인하여 네비게이션 결정
         lifecycleScope.launch {
-            val isLoggedIn = getAutoLoginState(applicationContext).first() // 자동 로그인 상태 확인
+            val isLoggedIn = mainViewModel.getAutoLoginState(applicationContext).first() // 자동 로그인 상태 확인
             setContent {
                 val navController = rememberNavController()
                 GDGAndroidTheme {
@@ -56,10 +41,10 @@ class MainActivity : ComponentActivity() {
                         startDestination = if (isLoggedIn) "main" else "login" // 자동 로그인 여부에 따라 시작 화면 설정
                     ) {
                         composable("login") {
-                            LoginScreen(navController)
+                            LoginScreen(navController, mainViewModel)
                         }
                         composable("main") {
-                            MainScreen(navController)
+                            MainScreen(navController, mainViewModel)
                         }
                         composable("user") {
                             UserScreen(navController)

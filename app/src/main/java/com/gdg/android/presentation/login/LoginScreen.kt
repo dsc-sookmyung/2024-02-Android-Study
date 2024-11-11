@@ -32,12 +32,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.gdg.android.R
 import com.gdg.android.presentation.main.MainActivity
+import com.gdg.android.presentation.main.MainViewModel
 import com.gdg.android.ui.theme.GDGAndroidTheme
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
     navController: NavController,
+    mainViewModel: MainViewModel
 ) {
     var department by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -112,9 +114,7 @@ fun LoginScreen(
             contentPadding = PaddingValues(vertical = 12.dp),
             onClick = {
                 if (department.isNotBlank() && name.isNotBlank()) {
-                    (context as? MainActivity)?.lifecycleScope?.launch {
-                        (context as? MainActivity)?.saveAutoLoginState(context, true)
-                    }
+                    mainViewModel.saveAutoLoginState(context, true)
                     navController.navigate("main") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     }
@@ -143,6 +143,9 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     GDGAndroidTheme {
-        LoginScreen(navController = rememberNavController())
+        LoginScreen(
+            navController = rememberNavController(),
+            mainViewModel = MainViewModel()
+        )
     }
 }
