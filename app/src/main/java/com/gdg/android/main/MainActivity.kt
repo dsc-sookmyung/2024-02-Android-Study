@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.LightGray
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -55,17 +56,20 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHost
 import com.gdg.android.login.LoginScreen
 import com.gdg.android.ui.theme.GDGAndroidTheme
+import com.gdg.android.ui.theme.Pink80
+import com.gdg.android.ui.theme.button3Bold
 import com.gdg.android.user.UserCreateScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auto_login")
 class MainActivity : ComponentActivity() {
+    /*
     private val AUTO_LOGIN_KEY = booleanPreferencesKey("auto_login")
 
     //자동 로그인 상태 저장 함수
@@ -76,19 +80,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     fun getAutoLoginState(context: Context): Flow<Boolean> {
         return context.dataStore.data
             .map { preferences ->
                 preferences[AUTO_LOGIN_KEY] ?: false
             }
     }
-
+     */
+    private lateinit var mainViewModel: MainViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         lifecycleScope.launch {
-            val isLoggedIn = getAutoLoginState(applicationContext).first()
+            val isLoggedIn =
+                mainViewModel.getAutoLoginState(applicationContext).first()
             setContent {
                 val navController = rememberNavController()
                 GDGAndroidTheme {
@@ -97,13 +105,13 @@ class MainActivity : ComponentActivity() {
                         startDestination = if (isLoggedIn) "main" else "login"
                     ) {
                         composable("login") {
-                            LoginScreen(navController)
+                            LoginScreen(navController, mainViewModel)
                         }
                         composable("main") {
-                            MainScreen(navController)
+                            MainScreen(navController, mainViewModel)
                         }
                         composable("users") {
-                            UserScreen(navController)
+                            UserScreen(navController, mainViewModel)
                         }
                         composable("userCreate") {
                             UserCreateScreen(navController)
@@ -117,7 +125,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(navController: NavController) {
+fun MainScreen(
+    navController: NavController = rememberNavController(),
+    mainViewModel: MainViewModel = MainViewModel()
+) {
     val hobbies = listOf(
         "독서", "영화 감상", "음악 감상", "산책", "뜨개질", "기타 연주"
     )
@@ -137,22 +148,34 @@ fun MainScreen(navController: NavController) {
 
         Row() {
             Button(
-                onClick = { navController.navigate("users") }) { Text("유저 목록") }
+                onClick = {
+                    navController.navigate("users") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Pink80,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "유저 목록",
+                    style = button3Bold
+                ) }
         }
 
         Button(
             onClick = {
-                (context as? MainActivity)?.lifecycleScope?.launch {
-                    (context as? MainActivity)?.saveAutoLoginState(context, false)
-                }
+                mainViewModel.saveAutoLoginState(context, false)
                 navController.navigate("login") {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    popUpTo("login") { inclusive = true }
                 }
-            }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Pink80,
+                contentColor = White
+            )
         ) {
             Text(
                 text = "로그아웃",
-                fontWeight = FontWeight.Bold
+                style = button3Bold
             )
         }
 
