@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -27,22 +28,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.gdg.android.api.User
 import com.gdg.android.room.UserDatabase
 import com.gdg.android.room.UserEntity
+import com.gdg.android.ui.theme.BackgroundBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import titleLarge
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserScreen(navController: NavController) {
-    val mainViewModel: MainViewModel = viewModel()
-    val users by mainViewModel.users.observeAsState(emptyList())
+fun UserScreen(navController: NavController, mainViewModel: MainViewModel) {
+    val userViewModel: UserViewModel = viewModel()
+    val users by userViewModel.users.collectAsState()
 
     val context = LocalContext.current
     val roomDB = UserDatabase.getDatabase(context)
@@ -63,63 +68,65 @@ fun UserScreen(navController: NavController) {
         mainViewModel.getUsers()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null
+    BackgroundBox {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    title = {
+                        Text(
+                            text = "User List",
+                            style = titleLarge
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                )
+            },
+            floatingActionButton = {
+                SmallFloatingActionButton(
+                    shape = CircleShape,
+                    containerColor = Color.Gray,
+                    contentColor = Color.White,
+                    onClick = { navController.navigate("userCreate") } // Navigate to user create screen
+                ) {
+                    Icon(
+                        modifier = Modifier.padding(15.dp),
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = null
+                    )
+                }
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(innerPadding)
+            ) {
+                LazyColumn {
+                    items(users) { user ->
+                        UserItem(user)
+                    }
+                    itemsIndexed(userList) { _, user ->
+                        UserCreateItem(
+                            user = user,
+                            onDeleteClick = {
+                                coroutineScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        roomDB.userDao().delete(user) // Delete user
+                                    }
+                                    userList.remove(user) // Remove user from UI
+                                }
+                            }
                         )
                     }
-                },
-                title = {
-                    Text(
-                        text = "User List",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
-        },
-        floatingActionButton = {
-            SmallFloatingActionButton(
-                shape = CircleShape,
-                containerColor = Color.Gray,
-                contentColor = Color.White,
-                onClick = { navController.navigate("userCreate") } // Navigate to user create screen
-            ) {
-                Icon(
-                    modifier = Modifier.padding(15.dp),
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = null
-                )
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(innerPadding)
-        ) {
-            LazyColumn {
-                items(users) { user ->
-                    UserItem(user)
-                }
-                itemsIndexed(userList) { _, user ->
-                    UserCreateItem(
-                        user = user,
-                        onDeleteClick = {
-                            coroutineScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    roomDB.userDao().delete(user) // Delete user
-                                }
-                                userList.remove(user) // Remove user from UI
-                            }
-                        }
-                    )
                 }
             }
         }
@@ -185,4 +192,10 @@ fun UserCreateItem(
         thickness = 1.dp,
         color = Color.LightGray
     )
+}
+
+@Preview
+@Composable
+fun UserScreenPreview() {
+    UserScreen(rememberNavController(), mainViewModel = MainViewModel())
 }
