@@ -29,7 +29,10 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +63,17 @@ fun UserScreen(navController: NavController) {
     val context = LocalContext.current
     val roomDB = UserDatabase.getDatabase(context)
     val coroutineScope = rememberCoroutineScope()
-    val userList by roomDB.userDao().selectAll().collectAsStateWithLifecycle(initialValue = emptyList()) // Flow를 사용해 목록 자동 업데이트
+    val userList = remember { mutableStateListOf<UserEntity>() }
 
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            val users = withContext(Dispatchers.IO) {
+                roomDB.userDao().selectAll() // 모든 유저 데이터 가져오기 (백그라운드)
+            }
+            userList.clear()
+            userList.addAll(users)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -126,7 +138,7 @@ fun UserScreen(navController: NavController) {
                                     withContext(Dispatchers.IO) {
                                         roomDB.userDao().delete(user) // 유저 삭제
                                     }
-                                    //userList.remove(user) // UI에서 유저 제거
+                                    userList.remove(user) // UI에서 유저 제거
                                 }
                             }
                         )
