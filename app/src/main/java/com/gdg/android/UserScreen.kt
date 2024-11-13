@@ -28,34 +28,32 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.gdg.android.ui.theme.button1Bold
+import com.gdg.android.ui.theme.text1Regular
+import com.gdg.android.ui.theme.text2Light
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserScreen(navController: NavController) {
-    val mainViewModel: MainViewModel = viewModel()
-    val users by mainViewModel.users.observeAsState(emptyList())
+fun UserScreen(navController: NavController, mainViewModel: MainViewModel) {
+    val userViewModel: UserViewModel = viewModel()
+    val users by userViewModel.users.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val roomDB = UserDatabase.getDatabase(context)
     val coroutineScope = rememberCoroutineScope()
     val userList = remember { mutableStateListOf<UserEntity>() }
 
-    LaunchedEffect(Unit) {
-        mainViewModel.getUsers()
-        coroutineScope.launch {
-            val users = withContext(Dispatchers.IO) {
-                roomDB.userDao().selectAll() // 모든 유저 데이터 가져오기 (백그라운드)
-            }
-            userList.clear()
-            userList.addAll(users)
-        }
-    }
+    /*LaunchedEffect(Unit) {
+        userViewModel.getUsers()
+    }*/
 
     Scaffold(
         topBar = {
@@ -71,7 +69,8 @@ fun UserScreen(navController: NavController) {
                 title = {
                     Text(
                         text = "유저 목록",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = button1Bold
                     )
                 }
             )
@@ -107,7 +106,8 @@ fun UserScreen(navController: NavController) {
                             text = "직접 추가한 유저 목록",
                             modifier = Modifier.padding(start = 18.dp, bottom = 8.dp),
                             color = Color.Gray,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            style = button1Bold
                         )
                     }
                     itemsIndexed(userList) { _, user ->
@@ -141,12 +141,14 @@ fun UserItem(user: User) {
         Column {
             Text(
                 text = user.firstName,
-                color = Color.Black
+                color = Color.Black,
+                style = text2Light
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = user.email,
-                color = Color.Gray
+                color = Color.Gray,
+                style = text2Light
             )
         }
         AsyncImage(
@@ -173,9 +175,9 @@ fun UserCreateItem(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column {
-            Text(text = user.name, color = Color.Black)
+            Text(text = user.name, color = Color.Black, style = text2Light)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = user.email, color = Color.Gray)
+            Text(text = user.email, color = Color.Gray, style = text2Light)
         }
         Icon(
             modifier = Modifier.clickable { onDeleteClick() }, // 삭제 클릭 이벤트
