@@ -1,11 +1,9 @@
 package com.gdg.android
 
-import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,91 +31,60 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role.Companion.Button
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.gdg.android.ui.theme.GDGAndroidTheme
-import kotlinx.coroutines.flow.Flow
+import com.gdg.android.ui.theme.Gray600
+import com.gdg.android.ui.theme.preBold1
+import com.gdg.android.ui.theme.preReg
+import com.gdg.android.ui.theme.preSemi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name="auto_login")
 class MainActivity : ComponentActivity() {
-    private val AUTO_LOGIN_KEY = booleanPreferencesKey("auto_login")
-
-    suspend fun saveAutoLoginState(context: Context, isLoggedIn: Boolean){
-        context.dataStore.edit{ preferences ->
-            preferences[AUTO_LOGIN_KEY] = isLoggedIn
-        }
-    }
-
-    fun getAutoLoginState(context: Context): Flow<Boolean> {
-        return context.dataStore.data
-            .map{preferences ->
-                preferences[AUTO_LOGIN_KEY] ?: false
-            }
-    }
-
-
+    private lateinit var mainViewModel: MainViewModel // mainViewModel 변수를 미리 생성
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java] // mainViewModel 변수 정의
 
         lifecycleScope.launch {
-            val isLoggedIn = getAutoLoginState(applicationContext).first()
-
+            val isLoggedIn =
+                mainViewModel.getAutoLoginState(applicationContext).first() // 자동 로그인 상태 확인
             setContent {
                 val navController = rememberNavController()
-
                 NavHost(
                     navController = navController,
-                    startDestination = if (isLoggedIn) "greeting" else "signIn"
+                    startDestination = if (isLoggedIn) "main" else "login" // 자동 로그인 여부에 따라 시작 화면 설정
                 ) {
-                    composable("signIn") {
-                        SignInScreen(navController)
+                    composable("login") {
+                        SignInScreen(navController, mainViewModel)
                     }
-                    composable("greeting") {
-                        GreetingScreen(
-                            name = "백서연",
-                            depart = "소프트웨어융합전공",
-                            modifier = Modifier.padding(16.dp),
-                            navController = navController
-                        )
+                    composable("main") {
+                        GreetingScreen(navController, mainViewModel)
                     }
-                    composable("user"){
+                    composable("user") {
                         UserScreen(navController)
                     }
-                    composable("userCreate"){
+                    composable("userCreate") {
                         UserCreateScreen(navController)
                     }
                 }
             }
-
         }
     }
 }
 
 @Composable
 fun GreetingScreen(
-    name: String,
-    depart: String,
-    modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    mainViewModel: MainViewModel
 ) {
     val subjects = listOf("네트워크보안", "컴퓨터특강", "데이터마이닝및분석", "파이썬데이터분석", "경영정보시스템")
     val context = LocalContext.current
@@ -130,8 +97,8 @@ fun GreetingScreen(
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            text = "$name",
-            modifier = modifier.padding(bottom = 10.dp)
+            text = "서연", style = preBold1,
+            modifier = Modifier.padding(bottom = 10.dp)
         )
         AsyncImage(
             modifier = Modifier
@@ -143,42 +110,43 @@ fun GreetingScreen(
         )
 
         Text(
-            text = "$depart",
-            modifier = modifier.padding(top = 10.dp),
-            color = Color.Gray,
+            text = "소프트웨어융합전공",
+            modifier = Modifier.padding(top = 10.dp),
+            color = Gray600, style = preReg
         )
 
-        Row(){
-            Button(onClick = {
+        Row() {
+            Button(modifier = Modifier.padding(horizontal = 10.dp),
+                onClick = {
                 navController.navigate("user")
-            }) { Text("유저 목록") }
+            }) { Text("유저 목록", style = preReg) }
 
-            Button(onClick ={
-                (context as? MainActivity)?.lifecycleScope?.launch {
-                    (context as? MainActivity)?.saveAutoLoginState(context,false)
+            Button(onClick = {
+                mainViewModel.saveAutoLoginState(
+                    context,
+                    false
+                ) // mainViewModel의 saveAutoLoginState() 호출
+                navController.navigate("login") {
+                    popUpTo("login") { inclusive = true }
                 }
-                navController.navigate("signIn"){
-                    popUpTo(navController.graph.startDestinationId){
-                        inclusive=true
-                    }
-                }
-            }){
-                Text("로그아웃", fontWeight = FontWeight.Bold)
+            }
+            ) {
+                Text("로그아웃", style = preReg)
             }
         }
 
 
         Text(
             text = stringResource(R.string._24_2),
-            modifier = modifier.padding(top = 10.dp),
-            color = Color.Black,
+            modifier = Modifier.padding(top = 10.dp),
+            color = Color.Black, style = preSemi
         )
 
         LazyColumn {
             items(subjects) { subject ->
                 Text(
-                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 5.dp),
-                    text = subject
+                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 10.dp),
+                    text = subject, style = preReg, color = Gray600
                 )
                 HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
@@ -191,7 +159,7 @@ fun GreetingScreen(
 }
 
 @Composable
-fun SignInScreen(navController: NavController) {
+fun SignInScreen(navController: NavController, mainViewModel: MainViewModel) {
     val (department, setDepartment) = remember {
         mutableStateOf("")
     }
@@ -209,16 +177,17 @@ fun SignInScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("안녕하세요, 여러분", fontSize = 30.sp)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text("안녕하세요, 여러분", fontSize = 30.sp, style = preBold1)
+        Spacer(modifier = Modifier.height(30.dp))
 
-        Text("학부", fontSize = 20.sp)
+        Text("학부", fontSize = 20.sp, style = preReg)
         TextField(value = department, onValueChange = setDepartment,
             placeholder = {
                 Text(
                     "학부를 입력해주세요",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    style = preReg
                 )
             })
         Spacer(modifier = Modifier.height(16.dp))
@@ -229,42 +198,23 @@ fun SignInScreen(navController: NavController) {
                 Text(
                     "이름을 입력해주세요",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    style = preReg
                 )
             })
         Spacer(modifier = Modifier.height(80.dp))
 
         Button(onClick = {
-            if (name.isNotEmpty() && department.isNotEmpty()) {
-                (context as? MainActivity)?.lifecycleScope?.launch {
-                    (context as? MainActivity)?.saveAutoLoginState(context, true)
-                }
-                Toast.makeText(context, "로그인에 성공했습니다", Toast.LENGTH_SHORT).show()
-                navController.navigate("greeting") {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                }
-            }
-        }) { Text("로그인") }
-
-
-    }
-
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GDGAndroidTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(top = 30.dp)
-        ) {
-
-
-
+            Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
+            navController.navigate("main")
+            mainViewModel.saveAutoLoginState(
+                context,
+                true
+            )
         }
+        ) { Text("로그인", style = preReg) }
+
+
     }
+
 }
