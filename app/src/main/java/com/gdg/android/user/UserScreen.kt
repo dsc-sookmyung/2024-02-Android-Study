@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -46,24 +47,37 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.gdg.android.api.User
+import com.gdg.android.ui.theme.Gray100
+import com.gdg.android.ui.theme.Gray700
+import com.gdg.android.ui.theme.button1Bold
+import com.gdg.android.ui.theme.button4Semi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserScreen(navController: NavController) {
-    val mainViewModel: MainViewModel = viewModel()
-    val users by mainViewModel.users.observeAsState(emptyList())
+fun UserScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel
+) {
+    val userViewModel: UserViewModel = viewModel()
+    val users by userViewModel.users.collectAsStateWithLifecycle()
+    // val mainViewModel: MainViewModel = viewModel()
+    //val users by mainViewModel.users.observeAsState(emptyList())
     val context = LocalContext.current
     val roomDB = UserDatabase.getDatabase(context)
     val coroutineScope = rememberCoroutineScope()
     val userList = remember { mutableStateListOf<UserEntity>() }
 
+    /*
     LaunchedEffect(Unit) {
-        mainViewModel.getUsers()
+
+        userViewModel.getUsers()
+        //mainViewModel.getUsers()
 
         coroutineScope.launch {
             val users = withContext(Dispatchers.IO) {
@@ -73,6 +87,7 @@ fun UserScreen(navController: NavController) {
             userList.addAll(users)
         }
     }
+     */
 
     Scaffold(
         topBar = {
@@ -88,7 +103,7 @@ fun UserScreen(navController: NavController) {
                 title = {
                     Text(
                         text = "유저 목록",
-                        fontWeight = FontWeight.Bold
+                        style = button1Bold
                     )
                 }
             )
@@ -124,8 +139,8 @@ fun UserScreen(navController: NavController) {
                         Text(
                             text = "직접 추가한 유저 목록",
                             modifier = Modifier.padding(start = 20.dp, bottom = 10.dp ),
-                            color = Color.LightGray,
-                            fontWeight = FontWeight.Bold
+                            color = Gray700,
+                            style = button4Semi
                         )
                     }
                     itemsIndexed(userList) { _, user ->

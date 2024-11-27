@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -26,10 +27,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.gdg.android.main.MainActivity
+import com.gdg.android.main.MainViewModel
+import com.gdg.android.ui.theme.Gray300
+import com.gdg.android.ui.theme.Gray600
+import com.gdg.android.ui.theme.Pink40
+import com.gdg.android.ui.theme.Pink80
+import com.gdg.android.ui.theme.button1Bold
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel
+) {
     val name = remember { mutableStateOf("") }
     val department = remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -39,7 +49,6 @@ fun LoginScreen(navController: NavController) {
         coroutineScope.launch {
             if (name.value.isNotEmpty() && department.value.isNotEmpty()) {
                 Toast.makeText(context, "로그인에 성공했습니다", Toast.LENGTH_SHORT).show()
-                (context as? MainActivity)?.saveAutoLoginState(context, true)
                 navController.navigate("main") {
                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
                 }
@@ -64,7 +73,7 @@ fun LoginScreen(navController: NavController) {
             Text(
                 text = "로그인",
                 fontSize = 24.sp,
-                color = Color.Black,
+                color = Gray600,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -73,7 +82,7 @@ fun LoginScreen(navController: NavController) {
                 value = department.value,
                 onValueChange = { department.value = it },
                 placeholder = {
-                    Text(text = "학부를 입력해주세요", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = "학부를 입력해주세요", fontSize = 14.sp, color = Gray600)
                 },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
@@ -88,7 +97,7 @@ fun LoginScreen(navController: NavController) {
                 value = name.value,
                 onValueChange = { name.value = it },
                 placeholder = {
-                    Text(text = "이름을 입력해주세요", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = "이름을 입력해주세요", fontSize = 14.sp, color = Gray600)
                 },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
@@ -101,19 +110,19 @@ fun LoginScreen(navController: NavController) {
             )
 
             Button(
-                onClick = { onLoginClick()
-                    (context as? MainActivity)?.lifecycleScope?.launch {
-                        (context as? MainActivity)?.saveAutoLoginState(context, true)
-                    }
-                    navController.navigate("main") {
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true}
-                    }
+                onClick = {
+                    Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
+                    navController.navigate("main")
+                    mainViewModel.saveAutoLoginState(context, true)
                           },
-                modifier = Modifier.fillMaxWidth()
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Pink80,
+                    contentColor = Color.White
+                )
             ) {
                 Text(
                     text = "로그인",
-                    fontWeight = FontWeight.Bold,
+                    style = button1Bold
                 )
             }
         }
